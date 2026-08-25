@@ -1,0 +1,44 @@
+# Tiny smoke config: validates the T2M train/gen pipeline on a small export.
+# Not for real training. Uses whatever clip_dim the smoke store was built with.
+# Smoke stores live in /tmp (ephemeral) — never the real data root.
+
+data:
+  codes_root: /tmp/semoco_mgpt_smoke/t2m_codes
+  train_split: train
+  val_split: val
+  max_motion_tok: 200
+
+text:
+  encode: flan
+  encode_model: google/flan-t5-base   # override: use base instead of default XL
+  text_max_length: 64
+  cfg_prob: 0.1
+
+model:
+  d_model: 256
+  n_layers: 4
+  n_heads: 4
+  ffn_hidden: 512
+  max_seq_len: 1024
+  code_pred_layers: 2
+  eos_loss_scale: 1.0
+
+optim:
+  lr: 3.0e-4
+  weight_decay: 0.1
+  warmup_steps: 20
+  grad_clip: 1.0
+
+train:
+  batch_size: 8
+  grad_accum_steps: 1
+  max_steps: 100000
+  precision: bf16
+  num_workers: 4
+  log_every: 25
+  val_every: 100
+  ckpt_every: 200
+  out_dir: runs/t2m_smoke
+
+swanlab:
+  enabled: false

@@ -1,0 +1,55 @@
+# SeMoCo-Generator - 1B Motion-only pretraining (Qwen3TTS-aligned).
+# Qwen3TTS-aligned: head_dim=128, GQA 2:1, code_pred=1024, rope_theta=1M.
+# Trains backbone + code predictor on pure motion codes (no text).
+# Use as pretraining before T2M fine-tuning.
+
+data:
+  codes_root: local://codes_s4   # output dir of tools.export_motion_codes
+  train_split: train
+  val_split: val
+  context_length: 2048
+  pack: true
+
+model:
+  d_model: 1536
+  n_layers: 30
+  n_heads: 12                    # head_dim = 1536/12 = 128
+  n_kv_heads: 6                  # GQA 2:1
+  ffn_hidden: 4096
+  rope_theta: 1000000.0
+  dropout: 0.0
+  max_seq_len: 4096
+  code_pred_hidden: 1024
+  code_pred_layers: 5
+  code_pred_heads: 8
+  code_pred_kv_heads: 4
+  code_pred_ffn_hidden: 3072
+  code_axis_loss_scale: 0.3
+  code_axis_start_step: 50000    # q0-only pretraining for 50k steps
+  code_axis_warmup_steps: 10000
+  gradient_checkpointing: false
+  loss_weights: null
+
+optim:
+  lr: 0.00015
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+  warmup_steps: 6000
+  grad_clip: 1.0
+
+train:
+  batch_size: 2                  # packed ctx=2048
+  grad_accum_steps: 4            # global batch ~8
+  max_steps: 100000
+  precision: bf16
+  num_workers: 4
+  seed: 3407
+  log_every: 50
+  val_every: 1000
+  ckpt_every: 5000
+  out_dir: runs/mgpt_1b_pretrain
+
+swanlab:
+  enabled: false
+  project: SeMoCo-Generator
+  experiment_name: mgpt_1b_pretrain

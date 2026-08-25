@@ -1,0 +1,47 @@
+# TMR-Flan text encoder contrastive training
+#
+# Trains only the text encoder side (ACTORStyleEncoder with Flan-T5 input).
+# Motion encoder is frozen; motion latents are pre-computed once.
+#
+# Usage:
+#   python -m semoco_generator.train.train_tmr_flan --config configs/tmr_flan.yaml
+#
+# DDP:
+#   torchrun --nproc_per_node=8 -m semoco_generator.train.train_tmr_flan \
+#       --config configs/tmr_flan.yaml
+
+data:
+  codes_root: "local://t2m_codes"
+  motion_latents_root: "local://tmr_soma_flan"
+
+model:
+  latent_dim: 256
+  num_layers: 6
+  num_heads: 4
+  ff_size: 1024
+  dropout: 0.1
+  temperature: 0.1
+  text_input_dim: 2048
+
+optim:
+  lr: 1.0e-4
+  weight_decay: 0.0
+  grad_clip: 1.0
+  warmup_steps: 1000
+
+train:
+  batch_size: 256
+  max_steps: 200000
+  precision: bf16
+  grad_accum_steps: 1
+  val_every: 1000
+  ckpt_every: 5000
+  log_every: 50
+  num_workers: 4
+  out_dir: "runs/tmr-soma-flan"
+  seed: 3407
+
+swanlab:
+  enabled: false
+  project: TMR
+  experiment_name: tmr-soma-flan

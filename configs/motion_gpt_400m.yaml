@@ -1,0 +1,52 @@
+# SeMoCo-Generator — 400M motion prior (Qwen3-TTS-style packet LM, 419M params at Q=16).
+# Time-axis AR over 12.5Hz motion packets; q1-q15 use codebook-axis AR.
+
+data:
+  # local:// resolves against $MOTIONVERSE_DATA_ROOT,
+  # matching the tokenizer repo. Plain paths also work.
+  codes_root: local://codes_s4   # output dir of tools.export_motion_codes
+  train_split: train
+  val_split: val
+  context_length: 2048           # packets @12.5Hz; document-masked packing
+  pack: true                     # concatenate clips with per-clip attention + RoPE reset
+
+model:
+  # Codebook geometry (num_codebooks / codebook_size) is derived from the
+  # exported store's meta.json when omitted. Default tokenizer is Q=16, codebook=1024.
+  d_model: 1024
+  n_layers: 24
+  n_heads: 16
+  n_kv_heads: null               # null -> full MHA
+  ffn_hidden: 2730               # SwiGLU inner dim
+  rope_theta: 10000.0
+  dropout: 0.0
+  max_seq_len: 4096              # >= context_length (per-clip RoPE positions < ctx)
+  code_pred_layers: 5            # Qwen3-TTS-style causal transformer over [hidden, q0, q1, ...]
+  code_pred_heads: 8             # the code predictor is sized independently of the backbone
+  code_pred_ffn_hidden: 3072
+  code_axis_loss_scale: 0.3      # Qwen3-TTS-style auxiliary sub-talker weight
+  loss_weights: null             # built-in default, adapts to Q
+
+optim:
+  lr: 2.5e-4
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  warmup_steps: 1000
+  grad_clip: 1.0
+
+train:
+  batch_size: 2                  # per-GPU (ctx=2048 packed + 5-layer code-axis predictor)
+  grad_accum_steps: 1
+  max_steps: 100000
+  precision: bf16
+  num_workers: 8
+  seed: 3407
+  log_every: 50
+  val_every: 1000
+  ckpt_every: 5000
+  out_dir: runs/mgpt_codear_400m
+
+swanlab:
+  enabled: false
+  project: VanillaMotionGPT
+  experiment_name: mgpt_codear_400m

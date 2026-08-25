@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semoco-generator"
+version = "1.0.0"
+description = "SeMoCo-Generator: an autoregressive text-to-motion language model over SeMoCo motion tokens"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # Pinned to the same build as SeMoCo-Tokenizer: the tokenizer repo is
+    # imported in-process for decoding, so the two must share one environment.
+    "torch==2.12.0",
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+    "scipy>=1.11",
+    "pyarrow>=14",
+    "transformers>=4.40",
+    "huggingface-hub>=0.24",
+    "gdown>=5",
+    "sentencepiece",
+    "protobuf",
+    "psutil>=5.9",
+    "swanlab>=0.3",
+]
+
+[project.optional-dependencies]
+# Decode motion codes back to SOMA/SMPL-X geometry. Needed for generation and
+# for the cross-representation conversions the evaluation tracks perform;
+# training runs entirely off the exported code store and does not need it.
+decode = [
+    "vector-quantize-pytorch>=1.14",
+    "warp-lang>=1.11.1",
+    "trimesh",
+    "rtree",
+    "smplx",
+]
+# Retrieval evaluator (TMR-SOMA-RP) and the kimodo skeleton backbone it loads.
+tmr = [
+    "peft",
+    "accelerate",
+    "omegaconf",
+    "hydra-core",
+    "einops",
+    "pydantic",
+    "safetensors",
+]
+viewer = ["viser"]
+# Skeleton animation rendering to MP4/GIF.
+render = ["matplotlib>=3.7", "imageio-ffmpeg>=0.4"]
+dev = ["pytest>=7.0", "pytest-mock>=3.10"]
+
+[tool.setuptools.packages.find]
+include = ["semoco_generator*"]
+exclude = ["third_party*", "tests*"]
+
+[tool.uv]
+environments = ["sys_platform == 'linux'"]
+
+# Pin torch to the CUDA 12.6 wheel index; PyPI's default build targets a
+# different CUDA runtime and silently breaks `import torch` on these hosts.
+# `explicit` keeps the index scoped to torch instead of shadowing PyPI for
+# every other dependency.
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = [
+    # All three are auto-skipped by tests/conftest.py when the dependency is
+    # absent, so a fresh clone runs green; run them explicitly once it is there.
+    "requires_tokenizer: needs the SeMoCo-Tokenizer repo on disk",
+    "requires_smplx: needs the registration-gated SMPL-X model",
+    "requires_kimodo: needs third_party/kimodo installed with the [tmr] extra",
+]

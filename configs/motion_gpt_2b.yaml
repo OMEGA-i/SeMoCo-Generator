@@ -1,0 +1,53 @@
+# SeMoCo-Generator — 2B (Qwen3-TTS-style packet LM, actual ~2.0B at Q=16).
+# Time-axis AR over 12.5Hz motion packets; q1-q15 use codebook-axis AR.
+#
+# Scaling ladder: 150M -> 400M -> 1B -> 2B  (2.7x -> 2.5x -> 2.0x)
+# H100 80GB: single-GPU fits (~47 GB peak with bf16 + Adam).
+# Use gradient_checkpointing if activations are tight at batch_size > 1.
+
+data:
+  codes_root: local://codes_s4   # output dir of tools.export_motion_codes
+  train_split: train
+  val_split: val
+  context_length: 2048           # packets @12.5Hz; document-masked packing
+  pack: true
+
+model:
+  d_model: 2048
+  n_layers: 34
+  n_heads: 32                    # head_dim = 2048/32 = 64
+  n_kv_heads: null               # MHA (~2.0B); set to 8 for GQA (~1.83B, saves ~214M)
+  ffn_hidden: 5461               # SwiGLU inner dim (8/3 * 2048 ≈ 5461)
+  rope_theta: 10000.0
+  dropout: 0.0
+  max_seq_len: 4096
+  code_pred_layers: 6            # slightly deeper for 2B scale
+  code_pred_heads: 8             # 8 heads is plenty for 17-token code-axis seq
+  code_pred_ffn_hidden: 5461
+  code_axis_loss_scale: 0.3
+  gradient_checkpointing: true
+  loss_weights: null
+
+optim:
+  lr: 1.5e-4                     # N^(-0.25) scaling from 150M's 3e-4
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  warmup_steps: 4000
+  grad_clip: 1.0
+
+train:
+  batch_size: 1                  # per-GPU (~47 GB peak; try 2 if memory allows)
+  grad_accum_steps: 1
+  max_steps: 100000
+  precision: bf16
+  num_workers: 8
+  seed: 3407
+  log_every: 50
+  val_every: 1000
+  ckpt_every: 5000
+  out_dir: runs/mgpt_codear_2b
+
+swanlab:
+  enabled: false
+  project: VanillaMotionGPT
+  experiment_name: mgpt_codear_2b

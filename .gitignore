@@ -1,0 +1,102 @@
+# Python / packaging
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+*.whl
+pip-wheel-metadata/
+
+# Test / coverage / type-check caches
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Experiment outputs / trackers
+runs/
+outputs/
+results/
+multirun/
+.hydra/
+eval_compare_outputs/
+swanlog/
+wandb/
+mlruns/
+tb_logs/
+tensorboard/
+lightning_logs/
+
+# Model / dataset binaries (obtain / build locally)
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+*.h5
+*.npz
+*.npy
+*.parquet
+*.feather
+*.p
+data/
+checkpoints/
+semoco-MotionVerse/
+
+# Logs / temp
+*.log
+*.log.*
+logs/
+tmp/
+temp/
+.tmp/
+
+# OS / editor / IDE
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*.bak
+*.orig
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Ad-hoc local scratch
+_smoke_*.py
+configs/_smoke.yaml
+semoco_generator/tools/_*
+scripts/_*
+
+# Agent / IDE contract files
+CLAUDE.md
+AGENTS.md
+.claude/
+
+# Local paper drafts
+/*.pdf

@@ -1,0 +1,16 @@
+.venv
+__pycache__
+*.py[cod]
+*.egg-info
+.eggs
+dist
+build
+.git
+.pytest_cache
+runs
+outputs
+data
+checkpoints
+swanlog
+*.log
+.DS_Store

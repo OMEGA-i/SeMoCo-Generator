@@ -1,0 +1,58 @@
+# SeMoCo-Generator — 901M Text2Motion (Flan-T5 + Qwen3TTS-aligned).
+# Qwen3TTS-aligned: head_dim=128, GQA 2:1, code_pred=1024, rope_theta=1M.
+# 1536→1024 bridge projection (matches Qwen3TTS 1.7B pattern).
+
+data:
+  codes_root: local://t2m_codes
+  train_split: train
+  val_split: val
+  max_motion_tok: 300
+
+text:
+  encode: qwen3
+  text_max_length: 64
+  cfg_prob: 0.1
+
+model:
+  d_model: 1536
+  n_layers: 30
+  n_heads: 12                    # head_dim = 1536/12 = 128
+  n_kv_heads: 6                  # GQA 2:1
+  ffn_hidden: 4096
+  rope_theta: 1000000.0
+  dropout: 0.0
+  max_seq_len: 4096
+  code_pred_hidden: 1024         # fixed, 1536→1024 bridge
+  code_pred_layers: 5
+  code_pred_heads: 8
+  code_pred_kv_heads: 4          # GQA 2:1
+  code_pred_ffn_hidden: 3072     # fixed
+  code_axis_loss_scale: 0.3
+  code_axis_warmup_steps: 10000  # longer warmup for 1B
+  gradient_checkpointing: true
+  eos_loss_scale: 1.0
+  loss_weights: null
+
+optim:
+  lr: 1.0e-4   # lower than the flan variant: wider text embeddings
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+  warmup_steps: 10000            # 5000 optimizer steps w/ grad_accum=2
+  grad_clip: 1.0
+
+train:
+  batch_size: 16
+  grad_accum_steps: 4            # global batch 512
+  max_steps: 100000
+  precision: bf16
+  num_workers: 4
+  seed: 3407
+  log_every: 50
+  val_every: 1000
+  ckpt_every: 5000
+  out_dir: runs/t2m_1b_qwen3
+
+swanlab:
+  enabled: false
+  project: SeMoCo-Generator
+  experiment_name: t2m_1b_qwen3

@@ -1,0 +1,3 @@
+[submodule "third_party/kimodo"]
+	path = third_party/kimodo
+	url = https://github.com/nv-tlabs/kimodo

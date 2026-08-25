@@ -1,0 +1,69 @@
+# Checkpoints available for evaluation.
+#
+# How to use:
+#   python -m semoco_generator.eval.checkpoints scan   ← discover new checkpoints
+#   python -m semoco_generator.eval.checkpoints list   ← show registered checkpoints
+#
+# Each checkpoint entry:
+#   <runs-dir-name>:
+#     checkpoint: runs/<dir>/model/best.pt     ← codes_root / tokenizer / text_encoder auto-discovered
+#
+# Explicit config (for ckpts outside runs/):
+#   <name>:
+#     checkpoint: /path/to/model.pt
+#     codes_root: local://t2m_codes
+#     tokenizer: /path/to/tokenizer.pt
+#     text_encoder: flan
+#
+# SPEC resolution (--semoco-model SPEC):
+#   name              single checkpoint
+#   @group            all checkpoints in a named group
+#   name1,name2       comma-separated list
+#   all               every checkpoint in this file
+#   runs/.../best.pt  raw path, for a run dir that still has config_resolved.json
+#
+# To add: copy-paste from the `scan` output.
+# To remove: delete the entry.
+
+default:
+  - t2m_150m_flan
+  - t2m_150m_qwen3
+  - t2m_150m_siglip
+  - t2m_400m_flan
+
+checkpoints:
+  t2m_150m_flan:
+    checkpoint: runs/t2m_150m_flan/model/best.pt
+  t2m_150m_qwen3:
+    checkpoint: runs/t2m_150m_qwen3/model/best.pt
+  t2m_150m_siglip:
+    checkpoint: runs/t2m_150m_siglip/model/best.pt
+  t2m_400m_flan:
+    checkpoint: runs/t2m_400m_flan/model/best.pt
+
+groups:
+  # All Flan-T5 checkpoints
+  flan:
+    - t2m_150m_flan
+    - t2m_400m_flan
+
+  # Every registered checkpoint
+  registered:
+    - t2m_150m_flan
+    - t2m_150m_qwen3
+    - t2m_150m_siglip
+    - t2m_400m_flan
+
+  # 150M only
+  150m:
+    - t2m_150m_flan
+    - t2m_150m_qwen3
+    - t2m_150m_siglip
+
+  # 400M only
+  400m:
+    - t2m_400m_flan
+
+  # Quick smoke test
+  quick:
+    - t2m_150m_flan

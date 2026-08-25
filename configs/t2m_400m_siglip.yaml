@@ -1,0 +1,57 @@
+# SeMoCo-Generator — 389M Text2Motion (Flan-T5 + Qwen3TTS-aligned).
+# Qwen3TTS-aligned: head_dim=128, GQA 2:1, code_pred=1024, rope_theta=1M.
+# Backbone=code_pred=1024 → identity bridge (no params).
+
+data:
+  codes_root: local://t2m_codes
+  train_split: train
+  val_split: val
+  max_motion_tok: 300
+
+text:
+  encode: siglip
+  text_max_length: 64
+  cfg_prob: 0.1
+
+model:
+  d_model: 1024
+  n_layers: 24
+  n_heads: 8                     # head_dim = 1024/8 = 128
+  n_kv_heads: 4                  # GQA 2:1
+  ffn_hidden: 2730
+  rope_theta: 1000000.0
+  dropout: 0.0
+  max_seq_len: 4096
+  code_pred_hidden: 1024         # fixed, 1:1 -> identity bridge
+  code_pred_layers: 5
+  code_pred_heads: 8
+  code_pred_kv_heads: 4          # GQA 2:1
+  code_pred_ffn_hidden: 3072     # fixed
+  code_axis_loss_scale: 0.3
+  code_axis_warmup_steps: 5000
+  eos_loss_scale: 1.0
+  loss_weights: null
+
+optim:
+  lr: 2.0e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+  warmup_steps: 4000
+  grad_clip: 1.0
+
+train:
+  batch_size: 32
+  grad_accum_steps: 1
+  max_steps: 100000
+  precision: bf16
+  num_workers: 4
+  seed: 3407
+  log_every: 50
+  val_every: 1000
+  ckpt_every: 5000
+  out_dir: runs/t2m_400m_siglip
+
+swanlab:
+  enabled: false
+  project: SeMoCo-Generator
+  experiment_name: t2m_400m_siglip
